@@ -52,9 +52,12 @@ function Start () {
 		if(temp[i] == "")
 			break;
 		scores[i] = parseFloat(temp[i]);
+		if(i > 0 && scores[i] < scores[i - 1]) {
+			scores = new float[10];
+			break;
+		}
 	}
 
-	// integrity check
 }
 
 function OnGUI () {
@@ -142,7 +145,14 @@ function check(i:int) {
 
 function exit() {
 	// writeout highscores
-	File.WriteAllText("scores.txt", scores.ToString());
+	var sw : StreamWriter = new StreamWriter ( Application.dataPath + "/" + "scores.txt" );
+	for(i in scores) {
+		if(i == 0)
+			break;
+		sw.WriteLine(i);
+	}
+	sw.Close ();
+
 	Application.LoadLevel(0);
 }
 
