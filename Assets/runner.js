@@ -31,11 +31,11 @@ function Start () {
 	paused = false;
 	score = 0;
 	time = 0;
-	timer = 2;
+	timer = .7;
 	countDown = 2.5;
 	board = new int[16];
 	for(row = 0; row < 4; row++) {
-		index = Random.Range(0,4);
+		index = Random.Range(0, 4);
 		for(col = 0; col < 4; col++) {
 			if(index == col) {
 				board[row*4 + col] = Random.Range(1, rock_textures.Length);
@@ -61,14 +61,15 @@ function Start () {
 }
 
 function OnGUI () {
+	// default UI (for menu, not gameplay)
 	GUI.skin = skin;
+	GUI.backgroundColor.a = 0;
 
 	// game over
 	if(lost) {
-		GUI.backgroundColor.a = 0;
 		if (timer <= 0 && Event.current.type == EventType.KeyDown)
 			exit();
-		var endResult = "You lost!";
+		var endResult = "Melted!";
 		if(maxTime > 0 && time >= maxTime || maxScore > 0 && score >= maxScore)
 			endResult = "Finish!\nScore: " + score + "\nTime: " +
 				Mathf.Round(time*1000)/1000 + " seconds.\nTiles per second: " + Mathf.Round(score/time*100)/100;
@@ -80,32 +81,34 @@ function OnGUI () {
 			GUI.Box(Rect(0, Screen.height/2 + Screen.height/20*i, Screen.width, Screen.height/20), i+1 + ": " + Mathf.Round(scores[i]*1000)/1000);
 
 	// game beginning
-	} else if(countDown > 0) {
-		GUI.backgroundColor.a = 0;
+	} else if(countDown > 0)
 		GUI.Button(Rect(0, 0, Screen.width, Screen.height), "" + Mathf.Round(countDown+.5));
 
-	} else if(paused) {
-		GUI.backgroundColor.a = 0;
-		if(GUI.Button(Rect(0,0,Screen.width,Screen.height),"Resume"))
+	else if(paused) {
+		if(GUI.Button(Rect(0, 0, Screen.width, Screen.height),"Resume"))
 			paused = !paused;
 
+	// display game tiles
 	} else {
+		GUI.backgroundColor.a = 1;
 		var row:int;
 		var col:int;
 		for(row = 0; row < 4; row++) {
 			for(col = 0; col < 4; col++) {
+				// black block
 				if(board[row*4 + col] > 0) {
-					if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row),Screen.width/(4), Screen.height/4),
-						rock_textures[board[row*4 + col]]))
+					if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row), Screen.width/(4), Screen.height/4), rock_textures[board[row*4 + col]]))
 						check(col);
+
+				// placeholder block
 				} else if(board[row*4] == -1) {
 					GUI.backgroundColor.a = 0;
-					if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row),Screen.width/(4), Screen.height/4), ""))
+					if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row), Screen.width/(4), Screen.height/4), ""))
 						check(col);
-				} else {
-					if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row),Screen.width/(4), Screen.height/4),""))
+
+				// white block
+				} else if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row), Screen.width/(4), Screen.height/4), ""))
 						check(col);
-				}
 			}
 		}
 	}
@@ -122,10 +125,13 @@ function generateNext() {
 			board[index] = -1;
 	}
 	score++;
+	// do not generate if at end
 	if(maxScore > 0 && score + 3 >= maxScore)
 		return;
+
+	// generate new tiles
 	var col:int;
-	index = Random.Range(0,4);
+	index = Random.Range(0, 4);
 	for(col = 0; col < 4; col++) {
 		if(index == col) {
 			board[12 + col] = Random.Range(1, rock_textures.Length);
@@ -136,11 +142,10 @@ function generateNext() {
 }
 
 function check(i:int) {
-	if(board[i] > 0) {
+	if(board[i] > 0)
 		generateNext();
-	} else {
+	else
 		lost = true;
-	}
 }
 
 function exit() {
@@ -157,13 +162,14 @@ function exit() {
 }
 
 function Update () {
-	if(countDown > 0) {
+	if(countDown > 0)
 		countDown -= Time.deltaTime;
-	} else if(paused) {
-		if(Input.GetKeyDown(KeyCode.Escape))
-			paused = !paused;
-	} else if(!lost) {
+	else if(paused && Input.GetKeyDown(KeyCode.Escape))
+		paused = !paused;
+	else if(!lost) {
 		time += Time.deltaTime;
+
+		// keypresses
 		if(Input.GetKeyDown(KeyCode.Z))
 			check(0);
 		if(Input.GetKeyDown(KeyCode.X))
@@ -184,34 +190,19 @@ function Update () {
 			generateNext();
 		if(Input.GetKeyDown(KeyCode.Escape))
 			paused = !paused;
-	} else {
+
+	} else
 		timer -= Time.deltaTime;
-	}
+
 	if(!lost && (maxTime > 0 && time >= maxTime || maxScore > 0 && score >= maxScore)) {
 		lost = true;
 		var appended:double = time;
 		var temp:double;
 		for(var i = 0; i < 10; i++) {
-			if(appended < scores[i]) {
+			if(appended < scores[i])
 				temp = appended;
 				appended = scores[i];
 				scores[i] = temp;
-			}
-//			if(scores[i] == 0) {
-//				if(appended)
-//				scores[i] = appended;
-//				break;
-//			}
-//			if(appended >= 0) {
-//				var temp = appended;
-//				appended = scores[i];
-//				scores[i] = temp;
-//			} else {
-//				if(time < scores[i]) {
-//					appended = scores[i];
-//					scores[i] = time;
-//				}
-//			}
 		}
 	}
 }
