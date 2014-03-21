@@ -11,6 +11,9 @@ var score:int;
 var timer:double;
 @System.NonSerialized
 var countDown:double;
+@System.NonSerialized
+var paused:boolean;
+
 var maxTime:int;
 var maxScore:int;
 var skin:GUISkin;
@@ -20,6 +23,7 @@ function Start () {
 	var rows:int;
 	var cols:int;
 	var index:int;
+	paused = false;
 	score = 0;
 	time = 0;
 	timer = 2;
@@ -46,7 +50,7 @@ function OnGUI () {
 			lose();
 		var endResult = "You lost!";
 		if(maxTime > 0 && time > maxTime || maxScore > 0 && score >= maxScore)
-			endResult = "You win!";
+			endResult = "Finish!";
 		if(GUI.Button(Rect(0,0,Screen.width,Screen.height), endResult + "\nScore: " + score + "\nTime: " +
 		Mathf.Round(time*1000)/1000 + " seconds.\nTiles per second: " + Mathf.Round(score/time*100)/100))
 			lose();
@@ -54,6 +58,10 @@ function OnGUI () {
 		GUI.skin = whiteSkin;
 		GUI.backgroundColor.a = 0;
 		GUI.Box(Rect(Screen.width/2-37, Screen.height/2-37, 75, 75), "" + Mathf.Round(countDown+.5));
+	} else if(paused) {
+		GUI.skin = whiteSkin;
+		if(GUI.Button(Rect(0,0,Screen.width,Screen.height),"Resume"))
+			paused = !paused;
 	} else {
 		var rows:int;
 		var cols:int;
@@ -117,6 +125,9 @@ function lose() {
 function Update () {
 	if(countDown > 0) {
 		countDown -= Time.deltaTime;
+	} else if(paused) {
+		if(Input.GetKeyDown(KeyCode.Escape))
+			paused = !paused;
 	} else if(!lost) {
 		time += Time.deltaTime;
 		if(Input.GetKeyDown(KeyCode.Z))
@@ -127,8 +138,18 @@ function Update () {
 			check(2);
 		if(Input.GetKeyDown(KeyCode.V))
 			check(3);
+		if(Input.GetKeyDown(KeyCode.F))
+			check(0);
+		if(Input.GetKeyDown(KeyCode.G))
+			check(1);
+		if(Input.GetKeyDown(KeyCode.H))
+			check(2);
+		if(Input.GetKeyDown(KeyCode.J))
+			check(3);
 		if(Input.GetKeyDown(KeyCode.Space))
 			generateNext();
+		if(Input.GetKeyDown(KeyCode.Escape))
+			paused = !paused;
 	} else {
 		timer -= Time.deltaTime;
 	}
