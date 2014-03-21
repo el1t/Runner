@@ -18,6 +18,7 @@ var maxTime:int;
 var maxScore:int;
 var skin:GUISkin;
 var whiteSkin:GUISkin;
+var rock:Texture;
 
 function Start () {
 	var rows:int;
@@ -50,9 +51,9 @@ function OnGUI () {
 			lose();
 		var endResult = "You lost!";
 		if(maxTime > 0 && time > maxTime || maxScore > 0 && score >= maxScore)
-			endResult = "Finish!";
-		if(GUI.Button(Rect(0,0,Screen.width,Screen.height), endResult + "\nScore: " + score + "\nTime: " +
-		Mathf.Round(time*1000)/1000 + " seconds.\nTiles per second: " + Mathf.Round(score/time*100)/100))
+			endResult = "Finish!\nScore: " + score + "\nTime: " +
+				Mathf.Round(time*1000)/1000 + " seconds.\nTiles per second: " + Mathf.Round(score/time*100)/100;
+		if(GUI.Button(Rect(0,0,Screen.width,Screen.height), endResult ))
 			lose();
 	} else if(countDown > 0) {
 		GUI.skin = whiteSkin;
@@ -74,9 +75,9 @@ function OnGUI () {
 			for(cols = 0; cols < 4; cols++) {
 				if((board[rows] as Array)[cols] == 1) {
 					GUI.skin = skin;
-					GUI.color = Color.black;
-					GUI.backgroundColor = Color.black;
-					if(GUI.Button(Rect(Screen.width/4*cols, Screen.height/4*(3-rows),Screen.width/(4), Screen.height/4),""))
+					//GUI.color = Color.black;
+					//GUI.backgroundColor = Color.black;
+					if(GUI.Button(Rect(Screen.width/4*cols, Screen.height/4*(3-rows),Screen.width/(4), Screen.height/4),rock))
 						if(rows == 0) {
 							generateNext();
 						}
