@@ -22,7 +22,7 @@ function Start () {
 	score = 0;
 	time = 0;
 	timer = 2;
-	countDown = 3;
+	countDown = 2.5;
 	board = new Array(4);
 	for(rows = 0; rows < 4; rows++) {
 		index = Random.Range(0,4);
@@ -49,13 +49,16 @@ function OnGUI () {
 		Mathf.Round(time*1000)/1000 + " seconds.\nTiles per second: " + Mathf.Round(score/time*100)/100))
 			lose();
 	} else if(countDown > 0) {
-		GUI.color.a = 0;
 		GUI.backgroundColor.a = 0;
-		GUI.Box(Rect(Screen.width/2, Screen.height/2, 50, 50), "" + Mathf.Round(countDown));
+		GUI.Box(Rect(Screen.width/2-15, Screen.height/2-25, 30, 50), "" + Mathf.Round(countDown+.5));
 	} else {
 		var rows:int;
 		var cols:int;
-		for(rows = 0; rows < board.length; rows++) {
+		for(rows = 0; rows < 4; rows++) {
+			if(rows >= board.length) {
+				GUI.Box(Rect(0,0,Screen.width, Screen.height/4*(4-rows)),"");
+				break;
+			}
 			for(cols = 0; cols < 4; cols++) {
 				if((board[rows] as Array)[cols] == 1) {
 					GUI.color = Color.black;
@@ -118,6 +121,8 @@ function Update () {
 			check(2);
 		if(Input.GetKeyDown(KeyCode.V))
 			check(3);
+		if(Input.GetKeyDown(KeyCode.Space))
+			generateNext();
 	} else {
 		timer -= Time.deltaTime;
 	}
