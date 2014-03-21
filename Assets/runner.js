@@ -13,7 +13,8 @@ var timer:double;
 var countDown:double;
 var maxTime:int;
 var maxScore:int;
-var blackout:Texture;
+var skin:GUISkin;
+var whiteSkin:GUISkin;
 
 function Start () {
 	var rows:int;
@@ -39,6 +40,7 @@ function Start () {
 
 function OnGUI () {
 	if(lost) {
+		GUI.skin = whiteSkin;
 		GUI.backgroundColor.a = 0;
 		if (timer <= 0 && Event.current.type == EventType.KeyDown)
 			lose();
@@ -49,18 +51,21 @@ function OnGUI () {
 		Mathf.Round(time*1000)/1000 + " seconds.\nTiles per second: " + Mathf.Round(score/time*100)/100))
 			lose();
 	} else if(countDown > 0) {
+		GUI.skin = whiteSkin;
 		GUI.backgroundColor.a = 0;
-		GUI.Box(Rect(Screen.width/2-15, Screen.height/2-25, 30, 50), "" + Mathf.Round(countDown+.5));
+		GUI.Box(Rect(Screen.width/2-37, Screen.height/2-37, 75, 75), "" + Mathf.Round(countDown+.5));
 	} else {
 		var rows:int;
 		var cols:int;
 		for(rows = 0; rows < 4; rows++) {
 			if(rows >= board.length) {
+				GUI.skin = skin;
 				GUI.Box(Rect(0,0,Screen.width, Screen.height/4*(4-rows)),"");
 				break;
 			}
 			for(cols = 0; cols < 4; cols++) {
 				if((board[rows] as Array)[cols] == 1) {
+					GUI.skin = skin;
 					GUI.color = Color.black;
 					GUI.backgroundColor = Color.black;
 					if(GUI.Button(Rect(Screen.width/4*cols, Screen.height/4*(3-rows),Screen.width/(4), Screen.height/4),""))
@@ -68,6 +73,7 @@ function OnGUI () {
 							generateNext();
 						}
 				} else {
+					GUI.skin = whiteSkin;
 					GUI.color = Color.white;
 					GUI.backgroundColor = Color.white;
 					if(GUI.Button(Rect(Screen.width/4*cols, Screen.height/4*(3-rows),Screen.width/(4), Screen.height/4),""))
