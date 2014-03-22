@@ -31,7 +31,7 @@ function Start () {
 	paused = false;
 	score = 0;
 	time = 0;
-	timer = .7;
+	timer = .25;
 	countDown = 2.5;
 	board = new int[16];
 	for(row = 0; row < 4; row++) {
