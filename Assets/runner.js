@@ -21,7 +21,6 @@ var scores:float[];
 var maxTime:int;
 var maxScore:int;
 var skin:GUISkin;
-var scoreBoard:TextAsset;
 var rock_textures:Texture[];
 
 function Start () {
@@ -45,19 +44,21 @@ function Start () {
 		}
 	}
 	
-	//build highscores
+	// build highscores
 	scores = new float[10];
-	var temp = scoreBoard.text.Split("\n"[0]);
-	for(var i=0; i < temp.Length; i++) {
+	var sr = new StreamReader(Application.dataPath + "/" + "scores.txt");
+	var temp = sr.ReadToEnd().Split("\n"[0]);
+	sr.Close();
+
+	for(var i = 0; i < temp.Length; i++) {
 		if(temp[i] == "")
 			break;
 		scores[i] = parseFloat(temp[i]);
-		if(i > 0 && scores[i] < scores[i - 1]) {
+		if(i > 0 && scores[i] < scores[i - 1] && scores[i] > 0 || scores[i] < 0) {
 			scores = new float[10];
 			break;
 		}
 	}
-
 }
 
 function OnGUI () {
@@ -156,8 +157,8 @@ function exit() {
 			break;
 		sw.WriteLine(i);
 	}
-	sw.Close ();
-
+	sw.Close();
+	WaitForSeconds(1);
 	Application.LoadLevel(0);
 }
 
@@ -168,6 +169,24 @@ function Update () {
 		paused = !paused;
 	else if(!lost) {
 		time += Time.deltaTime;
+
+		if(maxTime > 0 && time >= maxTime || maxScore > 0 && score >= maxScore) {
+			lost = true;
+	
+			// update highscore
+			var appended:double = time;
+			var temp:double;
+			for(var i = 0; i < 10; i++) {
+				if(appended < scores[i] || scores[i] == 0) {
+					temp = appended;
+					appended = scores[i];
+					scores[i] = temp;
+				}
+				if(appended == 0)
+					return;
+			}
+			return;
+		}
 
 		// keypresses
 		if(Input.GetKeyDown(KeyCode.Z))
@@ -193,16 +212,4 @@ function Update () {
 
 	} else
 		timer -= Time.deltaTime;
-
-	if(!lost && (maxTime > 0 && time >= maxTime || maxScore > 0 && score >= maxScore)) {
-		lost = true;
-		var appended:double = time;
-		var temp:double;
-		for(var i = 0; i < 10; i++) {
-			if(appended < scores[i])
-				temp = appended;
-				appended = scores[i];
-				scores[i] = temp;
-		}
-	}
 }
