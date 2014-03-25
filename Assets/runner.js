@@ -46,7 +46,7 @@ function Start () {
 	
 	// build highscores
 	scores = new float[10];
-	var sr = new StreamReader(Application.dataPath + "/" + "scores.txt");
+	var sr = new StreamReader(Application.persistentDataPath + "/" + "scores.txt");
 	var temp = sr.ReadToEnd().Split("\n"[0]);
 	sr.Close();
 
@@ -65,21 +65,30 @@ function OnGUI () {
 	// default UI (for menu, not gameplay)
 	GUI.skin = skin;
 	GUI.backgroundColor.a = 0;
+	GUI.skin.textField.fontSize = Mathf.Min(Screen.width, Screen.height) * .2;
+	GUI.skin.textArea.fontSize = Mathf.Min(Screen.width, Screen.height) * .2;
+	GUI.skin.box.fontSize = Mathf.Min(Screen.width, Screen.height) / 30;
+	GUI.skin.button.fontSize = Mathf.Min(Screen.width, Screen.height) / 4;
 
 	// game over
 	if(lost) {
 		if (timer <= 0 && Event.current.type == EventType.KeyDown)
 			exit();
-		var endResult = "Melted!";
-		if(maxTime > 0 && time >= maxTime || maxScore > 0 && score >= maxScore)
-			endResult = "Finish!\nScore: " + score + "\nTime: " +
+		if(maxTime > 0 && time >= maxTime || maxScore > 0 && score >= maxScore) {
+			var endResult = "Finish!\nScore: " + score + "\nTime: " +
 				Mathf.Round(time*1000)/1000 + " seconds.\nTiles per second: " + Mathf.Round(score/time*100)/100;
-		if(GUI.Button(Rect(0, 0, Screen.width, Screen.height/2), endResult ))
-			exit();
+			if(GUI.Button(Rect(0, 0, Screen.width, Screen.height/4), "Finish!"))
+				exit();
+			GUI.Box(Rect(0, Screen.height/4, Screen.width, Screen.height/4), endResult);
+		} else
+			if(GUI.Button(Rect(0, 0, Screen.width, Screen.height/2), "Melted!"))
+				exit();
 
 		// high scores
 		for(var i = 0; i < 10; i++)
 			GUI.Box(Rect(0, Screen.height/2 + Screen.height/20*i, Screen.width, Screen.height/20), i+1 + ": " + Mathf.Round(scores[i]*1000)/1000);
+		if(GUI.Button(Rect(0, 0, Screen.width, Screen.height), ""))
+			exit();
 
 	// game beginning
 	} else if(countDown > 0)
@@ -92,25 +101,21 @@ function OnGUI () {
 	// display game tiles
 	} else {
 		GUI.backgroundColor.a = 1;
+		GUI.skin.button.onNormal.background = null;
 		var row:int;
 		var col:int;
-		for(row = 0; row < 4; row++) {
-			for(col = 0; col < 4; col++) {
+		for(col = 0; col < 4; col++) {
+			for(row = 0; row < 4; row++) {
 				// black block
 				if(board[row*4 + col] > 0) {
-					if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row), Screen.width/(4), Screen.height/4), rock_textures[board[row*4 + col]]))
-						check(col);
-
-				// placeholder block
-				} else if(board[row*4] == -1) {
-					GUI.backgroundColor.a = 0;
-					if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row), Screen.width/(4), Screen.height/4), ""))
-						check(col);
+					GUI.Box(Rect(Screen.width/4*col, Screen.height/4*(3-row), Screen.width/4, Screen.height/4), rock_textures[board[row*4 + col]]);
 
 				// white block
-				} else if(GUI.Button(Rect(Screen.width/4*col, Screen.height/4*(3-row), Screen.width/(4), Screen.height/4), ""))
-						check(col);
+				} else if(board[row*4 + col] != -1)
+					GUI.Box(Rect(Screen.width/4*col, Screen.height/4*(3-row), Screen.width/4, Screen.height/4), "");
 			}
+			if(GUI.Button(Rect(Screen.width/4*col, 0, Screen.width/4, Screen.height), ""))
+				check(col);
 		}
 	}
 }
@@ -151,7 +156,7 @@ function check(i:int) {
 
 function exit() {
 	// writeout highscores
-	var sw : StreamWriter = new StreamWriter ( Application.dataPath + "/" + "scores.txt" );
+	var sw : StreamWriter = new StreamWriter ( Application.persistentDataPath + "/" + "scores.txt" );
 	for(i in scores) {
 		if(i == 0)
 			break;
@@ -210,6 +215,8 @@ function Update () {
 		if(Input.GetKeyDown(KeyCode.Escape))
 			paused = !paused;
 
-	} else
+	} else if(Time.deltaTime > 0)
 		timer -= Time.deltaTime;
+	else
+		lost = true;
 }
