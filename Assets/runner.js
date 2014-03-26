@@ -20,6 +20,8 @@ var scores:float[];
 
 var maxTime:int;
 var maxScore:int;
+var hsDescend:int;
+var hsType:String;
 var skin:GUISkin;
 var rock_textures:Texture[];
 
@@ -36,17 +38,16 @@ function Start () {
 	for(row = 0; row < 4; row++) {
 		index = Random.Range(0, 4);
 		for(col = 0; col < 4; col++) {
-			if(index == col) {
+			if(index == col)
 				board[row*4 + col] = Random.Range(1, rock_textures.Length);
-			} else {
+			else
 				board[row*4 + col] = 0;
-			}
 		}
 	}
 	
 	// build highscores
 	scores = new float[10];
-	var sr = new StreamReader(Application.persistentDataPath + "/" + "scores.txt");
+	var sr = new StreamReader(Application.persistentDataPath + "/scores" + Application.loadedLevel + ".txt");
 	var temp = sr.ReadToEnd().Split("\n"[0]);
 	sr.Close();
 
@@ -54,7 +55,7 @@ function Start () {
 		if(temp[i] == "")
 			break;
 		scores[i] = parseFloat(temp[i]);
-		if(i > 0 && scores[i] < scores[i - 1] && scores[i] > 0 || scores[i] < 0) {
+		if(i > 0 && scores[i] * hsDescend < scores[i - 1] * hsDescend && scores[i] > 0 || scores[i] < 0) {
 			scores = new float[10];
 			break;
 		}
@@ -150,13 +151,16 @@ function generateNext() {
 function check(i:int) {
 	if(board[i] > 0)
 		generateNext();
-	else
+	else {
 		lost = true;
+		if(hsType == "distance")
+			updateHS();
+	}
 }
 
 function exit() {
 	// writeout highscores
-	var sw : StreamWriter = new StreamWriter ( Application.persistentDataPath + "/" + "scores.txt" );
+	var sw : StreamWriter = new StreamWriter(Application.persistentDataPath + "/scores" + Application.loadedLevel + ".txt");
 	for(i in scores) {
 		if(i == 0)
 			break;
@@ -164,7 +168,29 @@ function exit() {
 	}
 	sw.Close();
 	WaitForSeconds(1);
-	Application.LoadLevel(0);
+	Application.LoadLevel(Application.loadedLevel);
+}
+
+function updateHS () {
+	// update highscore
+	var appended:double;
+	switch(hsType) {
+		case "time":
+			appended = time;
+			break;
+		case "distance":
+			appended = score;
+	}
+	var temp:double;
+	for(var i = 0; i < 10; i++) {
+		if(appended * hsDescend < scores[i] * hsDescend || scores[i] == 0) {
+			temp = appended;
+			appended = scores[i];
+			scores[i] = temp;
+		}
+		if(appended == 0)
+			return;
+	}
 }
 
 function Update () {
@@ -177,19 +203,7 @@ function Update () {
 
 		if(maxTime > 0 && time >= maxTime || maxScore > 0 && score >= maxScore) {
 			lost = true;
-	
-			// update highscore
-			var appended:double = time;
-			var temp:double;
-			for(var i = 0; i < 10; i++) {
-				if(appended < scores[i] || scores[i] == 0) {
-					temp = appended;
-					appended = scores[i];
-					scores[i] = temp;
-				}
-				if(appended == 0)
-					return;
-			}
+			updateHS();
 			return;
 		}
 
@@ -212,7 +226,7 @@ function Update () {
 			check(3);
 		if(Input.GetKeyDown(KeyCode.Space))
 			generateNext();
-		if(Input.GetKeyDown(KeyCode.Escape))
+		if(Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Menu))
 			paused = !paused;
 
 	} else if(Time.deltaTime > 0)
