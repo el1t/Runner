@@ -47,18 +47,23 @@ function Start () {
 	
 	// build highscores
 	scores = new float[10];
-	var sr = new StreamReader(Application.persistentDataPath + "/scores" + Application.loadedLevel + ".txt");
-	var temp = sr.ReadToEnd().Split("\n"[0]);
-	sr.Close();
+	try {
+		var sr = new StreamReader(Application.persistentDataPath + "/scores" + Application.loadedLevel + ".txt");
+		var temp = sr.ReadToEnd().Split("\n"[0]);
+		sr.Close();
 
-	for(var i = 0; i < temp.Length; i++) {
-		if(temp[i] == "")
-			break;
-		scores[i] = parseFloat(temp[i]);
-		if(i > 0 && scores[i] * hsDescend < scores[i - 1] * hsDescend && scores[i] > 0 || scores[i] < 0) {
-			scores = new float[10];
-			break;
+		for(var i = 0; i < temp.Length; i++) {
+			if(temp[i] == "")
+				break;
+			scores[i] = parseFloat(temp[i]);
+			if(i > 0 && scores[i] * hsDescend < scores[i - 1] * hsDescend && scores[i] > 0 || scores[i] < 0) {
+				scores = new float[10];
+				break;
+			}
 		}
+	} catch(FileNotFoundException) {
+		var sw : StreamWriter = new StreamWriter(Application.persistentDataPath + "/scores" + Application.loadedLevel + ".txt");
+		sw.Close();
 	}
 }
 
